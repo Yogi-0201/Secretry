@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secretry - Cooperative Society Assistant</title>
+    <!-- Google Fonts: Inter & Outfit -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Login Page -->
+    <div id="login-page" class="login-page">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-glow">
+                    <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                        <path d="M12 8v4"/>
+                        <path d="M12 16h.01"/>
+                    </svg>
+                </div>
+                <h1>Secretry</h1>
+                <p>Digital Portal for Cooperative Housing Societies</p>
+            </div>
+
+            <div class="role-selector">
+                <button type="button" class="role-btn active" id="btn-role-resident" onclick="setRole('RESIDENT')">Resident</button>
+                <button type="button" class="role-btn" id="btn-role-admin" onclick="setRole('ADMIN')">Society Admin</button>
+            </div>
+
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="input-group">
+                    <label for="login-id" id="login-id-label">Email or Flat Number</label>
+                    <input type="text" id="login-id" required placeholder="e.g. john@gmail.com or A-101">
+                </div>
+                <div class="input-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required placeholder="••••••••">
+                </div>
+                <button type="submit" class="submit-btn">
+                    <span>Enter Portal</span>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+            </form>
+
+            <!-- Quick Demo Login Panel -->
+            <div class="demo-login-panel">
+                <h3>Quick Test Credentials</h3>
+                <div class="demo-buttons">
+                    <button class="demo-btn" onclick="fillDemo('john@gmail.com', 'password123', 'RESIDENT')">
+                        <span class="role-badge resident">Resident</span> John (A-101)
+                    </button>
+                    <button class="demo-btn" onclick="fillDemo('alice@gmail.com', 'password123', 'RESIDENT')">
+                        <span class="role-badge resident">Resident</span> Alice (B-202)
+                    </button>
+                    <button class="demo-btn" onclick="fillDemo('admin', 'admin123', 'ADMIN')">
+                        <span class="role-badge admin">Admin</span> Secretary
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- App Shell (Dashboard) -->
+    <div id="app-shell" class="app-shell hidden">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+                <span>Secretry</span>
+            </div>
+
+            <div class="user-profile-summary">
+                <div class="avatar" id="user-avatar-initial">S</div>
+                <div class="user-info">
+                    <h4 id="user-display-name">Loading...</h4>
+                    <span class="badge" id="user-display-role">Resident</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <!-- Resident Menu -->
+                <div id="resident-menu-items">
+                    <a href="#" class="nav-item active" onclick="switchTab('res-dash')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                        <span>Dashboard</span>
+                    </a>
+                </div>
+
+                <!-- Admin Menu -->
+                <div id="admin-menu-items" class="hidden">
+                    <a href="#" class="nav-item active" onclick="switchTab('admin-dash')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+                        <span>Admin Console</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="switchTab('admin-flats')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        <span>Flat Directory</span>
+                    </a>
+                    <a href="#" class="nav-item" onclick="switchTab('admin-guests')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        <span>Visitor Registry</span>
+                    </a>
+                </div>
+
+                <!-- Common Menu Items -->
+                <a href="#" class="nav-item" onclick="switchTab('notices')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                    <span>Announcements</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchTab('polls')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    <span>Society Voting</span>
+                </a>
+                <a href="#" class="nav-item" onclick="switchTab('complaints')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    <span>Raise Issues</span>
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <button class="logout-btn" onclick="handleLogout()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <span>Log Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="app-header">
+                <div class="header-search">
+                    <h2 id="current-section-title">Dashboard</h2>
+                </div>
+                <div class="header-widgets">
+                    <div class="clock-widget">
+                        <span id="live-time">10:30 AM</span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-body">
+
+                <!-- 1. RESIDENT DASHBOARD TAB -->
+                <section id="tab-res-dash" class="tab-pane">
+                    <div class="dashboard-banner">
+                        <div class="banner-text">
+                            <h2>Welcome back, <span id="banner-resident-name">Resident</span>!</h2>
+                            <p>Everything is running smoothly in your cooperative society. View dues and alerts below.</p>
+                        </div>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon due">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Outstanding Dues</h3>
+                                <p class="stat-value" id="stat-res-dues">$0.00</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon members">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Flat Number</h3>
+                                <p class="stat-value" id="stat-res-flat">A-101</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon visitor">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Registered Members</h3>
+                                <p class="stat-value" id="stat-res-members">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-layout">
+                        <!-- Maintenance Payment Card -->
+                        <div class="glass-card main-pay-card">
+                            <div class="card-header">
+                                <h2>Pay Maintenance Dues</h2>
+                            </div>
+                            <div class="card-body">
+                                <div id="no-dues-alert" class="alert alert-success hidden">
+                                    <strong>No Dues Outstanding!</strong> Your society accounts are fully paid.
+                                </div>
+                                <div id="dues-payment-form">
+                                    <p class="due-amount-display">Amount to Pay: <span id="payment-due-amount">$0.00</span></p>
+                                    <form onsubmit="handlePayDues(event)">
+                                        <div class="input-row">
+                                            <div class="input-group">
+                                                <label for="pay-amount">Payment Amount</label>
+                                                <input type="number" id="pay-amount" step="0.01" min="1" required placeholder="0.00">
+                                            </div>
+                                            <div class="input-group">
+                                                <label for="pay-description">Description</label>
+                                                <input type="text" id="pay-description" placeholder="e.g. Monthly Maintenance May">
+                                            </div>
+                                        </div>
+
+                                        <!-- Card Simulator UI -->
+                                        <div class="card-simulator">
+                                            <h4>Simulated Payment Gateway</h4>
+                                            <div class="card-field">
+                                                <label>Card Number</label>
+                                                <input type="text" placeholder="4111 2222 3333 4444" pattern="\d{16}" title="16-digit credit card number" required>
+                                            </div>
+                                            <div class="input-row">
+                                                <div class="card-field">
+                                                    <label>Expiry (MM/YY)</label>
+                                                    <input type="text" placeholder="12/28" pattern="\d{2}/\d{2}" required>
+                                                </div>
+                                                <div class="card-field">
+                                                    <label>CVV</label>
+                                                    <input type="password" placeholder="***" pattern="\d{3}" required>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button type="submit" class="primary-btn">Pay Maintenance Amount</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mini notice board -->
+                        <div class="glass-card resident-recent-notices">
+                            <div class="card-header">
+                                <h2>Recent Alerts</h2>
+                                <button class="link-btn" onclick="switchTab('notices')">View All</button>
+                            </div>
+                            <div class="card-body">
+                                <div id="res-mini-notices" class="notices-timeline-mini">
+                                    <!-- Populated dynamically -->
+                                    <p class="empty-message">No recent announcements.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- 2. ADMIN DASHBOARD TAB -->
+                <section id="tab-admin-dash" class="tab-pane">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon flats">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Total Flats</h3>
+                                <p class="stat-value" id="stat-adm-flats">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon due">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Total Dues Owed</h3>
+                                <p class="stat-value" id="stat-adm-dues">$0.00</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon visitor">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Active Visitors</h3>
+                                <p class="stat-value" id="stat-adm-guests">0</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon complaints">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Open Issues</h3>
+                                <p class="stat-value" id="stat-adm-complaints">0</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-layout">
+                        <!-- Charge Maintenance Utility -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2>Charge Society Maintenance</h2>
+                            </div>
+                            <div class="card-body">
+                                <form onsubmit="handleChargeMaintenance(event)">
+                                    <div class="input-group">
+                                        <label for="charge-target">Target Flat</label>
+                                        <select id="charge-target" required>
+                                            <option value="ALL">All Flats (Monthly Maintenance)</option>
+                                            <!-- Dynamically filled with list of flats -->
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="charge-amount">Amount</label>
+                                        <input type="number" id="charge-amount" min="1" step="0.01" required placeholder="e.g. 2000.00">
+                                    </div>
+                                    <button type="submit" class="secondary-btn">Process Charge</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Recent Guest Check-ins -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2>Active Guests In Society</h2>
+                                <button class="link-btn" onclick="switchTab('admin-guests')">Register Guest</button>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container-mini">
+                                    <table class="data-table-mini">
+                                        <thead>
+                                            <tr>
+                                                <th>Guest</th>
+                                                <th>Flat</th>
+                                                <th>Check-in</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="active-guests-mini-tbody">
+                                            <!-- Populated dynamically -->
+                                            <tr><td colspan="4" class="empty-td">No active guests checked in.</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- 3. FLAT DIRECTORY TAB (ADMIN ONLY) -->
+                <section id="tab-admin-flats" class="tab-pane">
+                    <div class="panel-header-row">
+                        <h2>Society Residents Database</h2>
+                        <button class="primary-btn" onclick="showAddFlatModal()">+ Add New Flat Owner</button>
+                    </div>
+
+                    <div class="glass-card">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Flat No</th>
+                                        <th>Owner Name</th>
+                                        <th>Email Address</th>
+                                        <th>Phone Number</th>
+                                        <th>Members</th>
+                                        <th>Outstanding Dues</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="flats-table-tbody">
+                                    <!-- Populated dynamically -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- 4. GUEST REGISTRY TAB (ADMIN ONLY) -->
+                <section id="tab-admin-guests" class="tab-pane">
+                    <div class="dashboard-layout">
+                        <!-- Check-in guest Form -->
+                        <div class="glass-card">
+                            <div class="card-header">
+                                <h2>Guest Check-in Register</h2>
+                            </div>
+                            <div class="card-body">
+                                <form onsubmit="handleCheckInGuest(event)">
+                                    <div class="input-group">
+                                        <label for="guest-name">Guest Full Name</label>
+                                        <input type="text" id="guest-name" required placeholder="e.g. Richard Roe">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="guest-phone">Phone Number</label>
+                                        <input type="tel" id="guest-phone" required placeholder="e.g. +91 9123456789">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="guest-flat">Visiting Flat</label>
+                                        <select id="guest-flat" required>
+                                            <option value="">-- Select Flat --</option>
+                                            <!-- Filled dynamically -->
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="guest-purpose">Purpose of Visit</label>
+                                        <input type="text" id="guest-purpose" placeholder="e.g. Maintenance, Delivery, Social Visit">
+                                    </div>
+                                    <button type="submit" class="primary-btn">Check In Guest</button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <!-- Visitor logs full history -->
+                        <div class="glass-card flex-double">
+                            <div class="card-header">
+                                <h2>Visitor Logbook History</h2>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-container">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Guest Name</th>
+                                                <th>Phone</th>
+                                                <th>Flat</th>
+                                                <th>Purpose</th>
+                                                <th>Check-in</th>
+                                                <th>Check-out</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="visitors-history-tbody">
+                                            <!-- Filled dynamically -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- 5. ANNOUNCEMENTS / NOTICES TAB -->
+                <section id="tab-notices" class="tab-pane">
+                    <div class="dashboard-layout">
+                        <!-- Notices Timeline list -->
+                        <div class="glass-card flex-double">
+                            <div class="card-header">
+                                <h2>Society Notice Board</h2>
+                            </div>
+                            <div class="card-body">
+                                <div id="announcements-timeline" class="notices-timeline">
+                                    <!-- Loaded dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add notice form (Admin only) -->
+                        <div class="glass-card" id="admin-notice-form-card">
+                            <div class="card-header">
+                                <h2>Publish Announcement</h2>
+                            </div>
+                            <div class="card-body">
+                                <form onsubmit="handleCreateAnnouncement(event)">
+                                    <div class="input-group">
+                                        <label for="notice-title">Notice Title</label>
+                                        <input type="text" id="notice-title" required placeholder="e.g. Water Connection Repair">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="notice-category">Category</label>
+                                        <select id="notice-category" required>
+                                            <option value="GENERAL">General Notice</option>
+                                            <option value="WARNING">Critical Warning</option>
+                                            <option value="MAINTENANCE">Maintenance Alert</option>
+                                            <option value="PROBLEM">Society Problem</option>
+                                            <option value="FESTIVAL">Festival Celebration</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="notice-content">Message Content</label>
+                                        <textarea id="notice-content" rows="6" required placeholder="Describe the notice details..."></textarea>
+                                    </div>
+                                    <button type="submit" class="secondary-btn">Publish Notice</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- 6. VOTING POLLS TAB -->
+                <section id="tab-polls" class="tab-pane">
+                    <div class="dashboard-layout">
+                        <!-- Active & Closed Polls list -->
+                        <div class="glass-card flex-double">
+                            <div class="card-header">
+                                <h2>Active Decision Polls</h2>
+                            </div>
+                            <div class="card-body">
+                                <div id="polls-list-container" class="polls-list">
+                                    <!-- Loaded dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Create Poll form (Admin only) -->
+                        <div class="glass-card" id="admin-poll-form-card">
+                            <div class="card-header">
+                                <h2>Start Decision Poll</h2>
+                            </div>
+                            <div class="card-body">
+                                <form onsubmit="handleCreatePoll(event)">
+                                    <div class="input-group">
+                                        <label for="poll-question">Voting Question / Issue</label>
+                                        <input type="text" id="poll-question" required placeholder="e.g. Paint society building next month?">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="poll-desc">Detailed Description</label>
+                                        <textarea id="poll-desc" rows="3" placeholder="Provide background information..."></textarea>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="poll-options">Voting Options (Comma separated)</label>
+                                        <input type="text" id="poll-options" required placeholder="e.g. Yes,No,Need Discussion">
+                                        <small class="input-help">Separate each selectable option with a comma.</small>
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="poll-duration">Voting Window (Days)</label>
+                                        <input type="number" id="poll-duration" min="1" max="30" value="7" required>
+                                    </div>
+                                    <button type="submit" class="secondary-btn">Publish Decision Poll</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+
+                <!-- 7. COMPLAINTS TAB -->
+                <section id="tab-complaints" class="tab-pane">
+                    <div class="dashboard-layout">
+                        <!-- Complaints grid list -->
+                        <div class="glass-card flex-double">
+                            <div class="card-header">
+                                <h2>Raised Issues Directory</h2>
+                            </div>
+                            <div class="card-body">
+                                <div id="complaints-grid-container" class="complaints-grid">
+                                    <!-- Dynamic -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- File Complaint form (Resident only) -->
+                        <div class="glass-card" id="resident-complaint-form-card">
+                            <div class="card-header">
+                                <h2>Submit Society Issue</h2>
+                            </div>
+                            <div class="card-body">
+                                <form onsubmit="handleRaiseComplaint(event)">
+                                    <div class="input-group">
+                                        <label for="comp-title">Problem Title</label>
+                                        <input type="text" id="comp-title" required placeholder="e.g. Lift #1 shaking while descending">
+                                    </div>
+                                    <div class="input-group">
+                                        <label for="comp-desc">Describe the Problem</label>
+                                        <textarea id="comp-desc" rows="6" required placeholder="Give full details of the problem..."></textarea>
+                                    </div>
+                                    <button type="submit" class="primary-btn">File Formal Complaint</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- 8. MODAL WINDOWS -->
+    <!-- Add/Edit Resident Flat Modal -->
+    <div id="flat-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="flat-modal-title">Add Flat Resident</h3>
+                <button class="close-btn" onclick="closeFlatModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="flat-modal-form" onsubmit="handleFlatModalSubmit(event)">
+                    <input type="hidden" id="modal-flat-id">
+                    <div class="input-group">
+                        <label for="modal-flat-number">Flat Number</label>
+                        <input type="text" id="modal-flat-number" required placeholder="e.g. A-101">
+                    </div>
+                    <div class="input-group">
+                        <label for="modal-flat-owner">Resident Full Name</label>
+                        <input type="text" id="modal-flat-owner" required placeholder="e.g. Jane Doe">
+                    </div>
+                    <div class="input-group">
+                        <label for="modal-flat-email">Email Address</label>
+                        <input type="email" id="modal-flat-email" required placeholder="e.g. jane@example.com">
+                    </div>
+                    <div class="input-group">
+                        <label for="modal-flat-password">Portal Password</label>
+                        <input type="text" id="modal-flat-password" placeholder="Leave empty to keep existing password">
+                    </div>
+                    <div class="input-group">
+                        <label for="modal-flat-phone">Contact Phone</label>
+                        <input type="tel" id="modal-flat-phone" placeholder="e.g. +91 9999888877">
+                    </div>
+                    <div class="input-row">
+                        <div class="input-group">
+                            <label for="modal-flat-members">Members Count</label>
+                            <input type="number" id="modal-flat-members" min="1" value="2" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="modal-flat-balance">Outstanding Maintenance Balance</label>
+                            <input type="number" id="modal-flat-balance" min="0" step="0.01" value="0.00" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="primary-btn">Save Resident Record</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core App Logic Script -->
+    <script src="app.js"></script>
+</body>
+</html>
